@@ -196,7 +196,7 @@ TurnLaneScenario TurnLaneHandler::deduceScenario(const NodeID at,
                                  previous_intersection))
     {
         extractLaneData(previous_via_edge, previous_description_id, previous_lane_data);
-        previous_intersection = turn_analysis.PostProcess(
+        previous_intersection = turn_analysis.assignTurnTypes(
             previous_node, previous_via_edge, std::move(previous_intersection));
         for (std::size_t road_index = 0; road_index < previous_intersection.size(); ++road_index)
         {
