@@ -42,6 +42,8 @@ class IntersectionNormalizer
                            const SuffixTable &street_name_suffix_table,
                            const IntersectionGenerator &intersection_generator);
 
+    ~IntersectionNormalizer();
+
     // The function takes an intersection an converts it to a `perceived` intersection which closer
     // represents how a human might experience the intersection
     OSRM_ATTR_WARN_UNUSED
@@ -54,6 +56,8 @@ class IntersectionNormalizer
     const SuffixTable &street_name_suffix_table;
 
     const IntersectionGenerator &intersection_generator;
+
+    mutable std::size_t executed;
 
     // check if two indices in an intersection can be seen as a single road in the perceived
     // intersection representation. See below for an example. Utility function for

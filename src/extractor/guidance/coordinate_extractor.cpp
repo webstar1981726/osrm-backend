@@ -56,12 +56,28 @@ CoordinateExtractor::GetCoordinateAlongRoad(const NodeID intersection_node,
                                             const NodeID to_node,
                                             const std::uint8_t intersection_lanes) const
 {
-    const auto considered_lanes =
-        (intersection_lanes == 0) ? ASSUMED_LANE_COUNT : intersection_lanes;
-
     // we first extract all coordinates from the road
     auto coordinates =
         GetCoordinatesAlongRoad(intersection_node, turn_edge, traversed_in_reverse, to_node);
+
+    return ExtractRepresentativeCoordinate(intersection_node,
+                                           turn_edge,
+                                           traversed_in_reverse,
+                                           to_node,
+                                           intersection_lanes,
+                                           std::move(coordinates));
+}
+
+util::Coordinate CoordinateExtractor::ExtractRepresentativeCoordinate(
+    const NodeID intersection_node,
+    const EdgeID turn_edge,
+    const bool traversed_in_reverse,
+    const NodeID to_node,
+    const std::uint8_t intersection_lanes,
+    std::vector<util::Coordinate> coordinates) const
+{
+    const auto considered_lanes =
+        (intersection_lanes == 0) ? ASSUMED_LANE_COUNT : intersection_lanes;
 
     /* if we are looking at a straight line, we don't care where exactly the coordinate
      * is. Simply return the final coordinate. Turn angles/turn vectors are the same no matter which
@@ -341,8 +357,7 @@ util::Coordinate CoordinateExtractor::GetCoordinateCloseToTurn(const NodeID from
         const auto far_enough_away = [start_coordinate, compressedGeometryToCoordinate](
             const CompressedEdgeContainer::OnewayCompressedEdge &compressed_edge) {
             return util::coordinate_calculation::haversineDistance(
-                       compressedGeometryToCoordinate(compressed_edge), start_coordinate) >
-                   1;
+                       compressedGeometryToCoordinate(compressed_edge), start_coordinate) > 1;
         };
 
         // find the first coordinate, that is at least unequal to the begin of the edge
@@ -376,7 +391,7 @@ CoordinateExtractor::GetCoordinatesAlongRoad(const NodeID intersection_node,
 {
     if (!compressed_geometries.HasEntryForID(turn_edge))
     {
-        if( traversed_in_reverse )
+        if (traversed_in_reverse)
             return {{node_coordinates[to_node]}, {node_coordinates[intersection_node]}};
         else
             return {{node_coordinates[intersection_node]}, {node_coordinates[to_node]}};
