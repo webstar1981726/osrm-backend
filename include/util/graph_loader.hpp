@@ -9,6 +9,7 @@
 #include "util/fingerprint.hpp"
 #include "util/simple_logger.hpp"
 #include "util/typedefs.hpp"
+#include "storage/io.hpp"
 
 #include <boost/assert.hpp>
 #include <boost/filesystem.hpp>
@@ -32,27 +33,17 @@ namespace util
  * The since the restrictions reference nodes using their external node id,
  * we need to renumber it to the new internal id.
 */
-inline unsigned loadRestrictionsFromFile(std::istream &input_stream,
+inline unsigned loadRestrictionsFromFile(std::string &filename,
                                          std::vector<extractor::TurnRestriction> &restriction_list)
 {
-    const FingerPrint fingerprint_valid = FingerPrint::GetValid();
-    FingerPrint fingerprint_loaded;
-    unsigned number_of_usable_restrictions = 0;
-    input_stream.read((char *)&fingerprint_loaded, sizeof(FingerPrint));
-    if (!fingerprint_loaded.TestContractor(fingerprint_valid))
-    {
-        SimpleLogger().Write(logWARNING) << ".restrictions was prepared with different build.\n"
-                                            "Reprocess to get rid of this warning.";
-    }
-
-    input_stream.read((char *)&number_of_usable_restrictions, sizeof(unsigned));
+    storage::io::FileReader file(filename, storage::io::FileReader::VerifyFingerprint);
+    unsigned number_of_usable_restrictions = file.ReadElementCount32();
+    
     restriction_list.resize(number_of_usable_restrictions);
-    if (number_of_usable_restrictions > 0)
-    {
-        input_stream.read((char *)restriction_list.data(),
-                          number_of_usable_restrictions * sizeof(extractor::TurnRestriction));
+    if (number_of_usable_restrictions > 0) {
+        file.ReadInto(restriction_list.data(), number_of_usable_restrictions * sizeof(extractor::TurnRestriction));
     }
-
+    
     return number_of_usable_restrictions;
 }
 

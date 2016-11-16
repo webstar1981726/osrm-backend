@@ -394,11 +394,8 @@ void Extractor::FindComponents(unsigned max_edge_id,
   */
 std::shared_ptr<RestrictionMap> Extractor::LoadRestrictionMap()
 {
-    boost::filesystem::ifstream input_stream(config.restriction_file_name,
-                                             std::ios::in | std::ios::binary);
-
     std::vector<TurnRestriction> restriction_list;
-    util::loadRestrictionsFromFile(input_stream, restriction_list);
+    util::loadRestrictionsFromFile(config.restriction_file_name, restriction_list);
 
     util::SimpleLogger().Write() << " - " << restriction_list.size() << " restrictions.";
 
