@@ -100,15 +100,28 @@ inline NodeID loadNodesFromFile(std::istream &input_stream,
 /**
  * Reads a .osrm file and produces the edges.
  */
-inline NodeID loadEdgesFromFile(std::istream &input_stream,
+inline NodeID loadEdgesFromFile(std::istream &input_stream, std::string &filename,
                                 std::vector<extractor::NodeBasedEdge> &edge_list)
 {
-    EdgeID m;
-    input_stream.read(reinterpret_cast<char *>(&m), sizeof(unsigned));
-    edge_list.resize(m);
-    SimpleLogger().Write() << " and " << m << " edges ";
 
-    input_stream.read((char *)edge_list.data(), m * sizeof(extractor::NodeBasedEdge));
+    storage::io::FileReader file(filename, storage::io::FileReader::VerifyFingerprint);
+    EdgeID number_of_edges_filereader = file.ReadElementCount32();
+    std::cout << "number_of_edges_filereader " << number_of_edges_filereader << std::endl;
+    // edge_list.resize(number_of_edges_filereader);
+    // SimpleLogger().Write() << " and " << number_of_edges_filereader << " edges ";
+
+    // file.ReadInto(edge_list.data(), number_of_edges_filereader * sizeof(extractor::NodeBasedEdge));
+
+    // BOOST_ASSERT(edge_list.size() > 0);
+
+    EdgeID number_of_edges;
+    input_stream.read(reinterpret_cast<char *>(&number_of_edges), sizeof(unsigned));
+
+    std::cout << "number_of_edges " << number_of_edges << std::endl;
+    edge_list.resize(number_of_edges);
+    SimpleLogger().Write() << " and " << number_of_edges << " edges ";
+
+    input_stream.read((char *)edge_list.data(), number_of_edges * sizeof(extractor::NodeBasedEdge));
 
     BOOST_ASSERT(edge_list.size() > 0);
 
@@ -138,7 +151,7 @@ inline NodeID loadEdgesFromFile(std::istream &input_stream,
 
     SimpleLogger().Write() << "Graph loaded ok and has " << edge_list.size() << " edges";
 
-    return m;
+    return number_of_edges;
 }
 }
 }
